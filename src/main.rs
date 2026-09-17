@@ -2,13 +2,15 @@
 #![no_main]
 
 use core::panic::PanicInfo;
-use wardenkernel::{adversarial, capability};
+use wardenkernel::{adversarial, capability, gateway_tests};
 
 static HELLO: &[u8] = b"agent-kernel: boot ok";
 static CAP_PASS: &[u8] = b"capability_tests: PASS";
 static CAP_FAIL: &[u8] = b"capability_tests: FAIL";
 static ADV_PASS: &[u8] = b"adversarial_proof: PASS";
 static ADV_FAIL: &[u8] = b"adversarial_proof: FAIL";
+static GW_PASS: &[u8] = b"gateway_tests: PASS";
+static GW_FAIL: &[u8] = b"gateway_tests: FAIL";
 
 fn write_vga(row: isize, msg: &[u8], is_ok: bool) {
     let vga_buffer = 0xb8000 as *mut u8;
@@ -36,6 +38,9 @@ pub extern "C" fn _start() -> ! {
 
     let adv_passed = adversarial::run_adversarial_tests();
     write_vga(2, if adv_passed { ADV_PASS } else { ADV_FAIL }, adv_passed);
+
+    let gw_passed = gateway_tests::run_gateway_tests();
+    write_vga(3, if gw_passed { GW_PASS } else { GW_FAIL }, gw_passed);
 
     loop {}
 }
